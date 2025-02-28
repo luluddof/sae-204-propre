@@ -1,0 +1,126 @@
+{#  articles_panier  : tableau de dictionnaires
+        * dictionnaire : nom quantite prix article_id [stock]
+        *
+#}
+
+{% extends "client/layout_client.html" %}
+
+{% block title %}
+    <title>Boutique de vêtements</title>
+{% endblock %}
+
+{% block body %}
+    <div class="container">
+        <div class="row">
+            <div class="col-md-5">
+                {% include('client/boutique/_filtre.html') %}
+            </div>
+        </div>
+        
+        <div class="row mt-4">
+            <div class="col-md-5">
+                <h2>Nos vêtements</h2>
+                <div class="row">
+                    {% for article in articles %}
+                        <div class="col-md-6">
+                            <div class="card mb-4">
+                                <img class="card-img-top img-fluid" src="{{ url_for('static', filename='images/' + article.photo) }}" alt="{{ article.nom_vetement }}">
+                                <div class="card-body">
+                                    <h5 class="card-title">{{ article.nom_vetement }}</h5>
+                                    <p class="card-text">{{ article.description }}</p>
+                                    <p class="card-text">Type: {{ article.libelle_type_vetement }}</p>
+                                    <p class="card-text">Prix: {{ article.prix_vetement }} €</p>
+                                    <p class="card-text">Taille: {{ article.libelle_taille }}</p>
+                                    
+                                    {% if article.stock > 10 %}
+                                        <p class="card-text text-success">Stock disponible: {{ article.stock }}</p>
+                                    {% elif article.stock > 0 %}
+                                        <p class="card-text text-warning">Stock limité: {{ article.stock }} restant(s)</p>
+                                    {% else %}
+                                        <p class="card-text text-danger"><strong>Rupture de stock</strong></p>
+                                    {% endif %}
+                                    
+                                    {% if article.stock > 0 %}
+                                    <form action="/client/panier/add" method="post" style="display: inline-block;">
+                                        <input type="hidden" name="id_article" value="{{ article.id_vetement }}">
+                                        <div class="form-group">
+                                            <label for="quantite-{{ article.id_vetement }}">Quantité:</label>
+                                            <input type="number" name="quantite" id="quantite-{{ article.id_vetement }}" value="1" min="1" max="{{ article.stock }}" class="form-control" style="width: 70px; display: inline-block;">
+                                        </div>
+                                        <button type="submit" class="btn btn-primary mt-2">Ajouter au panier</button>
+                                    </form>
+                                    {% else %}
+                                    <button class="btn btn-secondary mt-2" disabled>Indisponible</button>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+            
+            <div class="col-md-7">
+                <div class="card">
+                    <div class="card-header bg-primary text-white">
+                        <h3>Votre panier</h3>
+                    </div>
+                    <div class="card-body">
+                        {% if articles_panier and articles_panier|length > 0 %}
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Article</th>
+                                        <th>Quantité</th>
+                                        <th>Prix unitaire</th>
+                                        <th>Prix total</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for article in articles_panier %}
+                                    <tr>
+                                        <td>{{ article.nom_vetement }}</td>
+                                        <td>{{ article.quantite }}</td>
+                                        <td>{{ article.prix_vetement }} €</td>
+                                        <td>{{ (article.prix_vetement * article.quantite)|round(2) }} €</td>
+                                        <td>
+                                            <div class="btn-group">
+                                                <form action="/client/panier/add" method="post" style="display: inline-block;">
+                                                    <input type="hidden" name="id_article" value="{{ article.vetement_id }}">
+                                                    <input type="hidden" name="quantite" value="1">
+                                                    <button type="submit" class="btn btn-sm btn-success">+</button>
+                                                </form>
+                                                <form action="/client/panier/delete" method="post" style="display: inline-block;">
+                                                    <input type="hidden" name="id_article" value="{{ article.vetement_id }}">
+                                                    <button type="submit" class="btn btn-sm btn-warning">-</button>
+                                                </form>
+                                                <form action="/client/panier/delete/line" method="post" style="display: inline-block;">
+                                                    <input type="hidden" name="id_article" value="{{ article.vetement_id }}">
+                                                    <button type="submit" class="btn btn-sm btn-danger">Supprimer</button>
+                                                </form>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                                <tfoot>
+                                    <tr>
+                                        <td colspan="3" class="text-right"><strong>Total:</strong></td>
+                                        <td><strong>{{ prix_total|round(2) }} €</strong></td>
+                                        <td>
+                                            <form action="/client/panier/vider" method="post">
+                                                <button type="submit" class="btn btn-danger">Vider le panier</button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        {% else %}
+                            <p>Votre panier est vide.</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
