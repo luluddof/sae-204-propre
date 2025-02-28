@@ -66,22 +66,64 @@ def client_commande_add():
 def client_commande_show():
     mycursor = get_db().cursor()
     id_client = session['id_user']
-    sql = '''  selection des commandes ordonnées par état puis par date d'achat descendant '''
-    commandes = []
+    sql = '''SELECT commande.id_commande, commande.date_achat, etat.libelle AS etat, 
+                    SUM(ligne_commande.prix * ligne_commande.quantite) AS prix_total,
+                    SUM(ligne_commande.quantite) AS nbr_articles
+             FROM commande 
+             JOIN ligne_commande ON commande.id_commande = ligne_commande.commande_id 
+             JOIN etat ON commande.etat_id = etat.id_etat
+             WHERE commande.utilisateur_id = %s 
+             GROUP BY commande.id_commande, commande.date_achat, etat.libelle
+             ORDER BY commande.date_achat DESC'''
+    mycursor.execute(sql, (id_client,))
+    commandes = mycursor.fetchall()
 
     articles_commande = None
-    commande_adresses = None
     id_commande = request.args.get('id_commande', None)
+    prix_total_commande = None
+    nbr_articles_commande = None
+    
     if id_commande != None:
         print(id_commande)
-        sql = ''' selection du détails d'une commande '''
+        sql = '''SELECT ligne_commande.quantite, ligne_commande.prix, vetement.nom_vetement AS nom, 
+                      vetement.photo AS image, ligne_commande.prix * ligne_commande.quantite AS prix_ligne
+                 FROM ligne_commande 
+                 JOIN vetement ON ligne_commande.vetement_id = vetement.id_vetement 
+                 WHERE ligne_commande.commande_id = %s'''
+        mycursor.execute(sql, (id_commande,))
+        articles_commande = mycursor.fetchall()
 
-        # partie 2 : selection de l'adresse de livraison et de facturation de la commande selectionnée
-        sql = ''' selection des adressses '''
+        # Calcul du prix total et du nombre d'articles de la commande sélectionnée
+        sql = '''SELECT SUM(ligne_commande.prix * ligne_commande.quantite) AS prix_total,
+                        SUM(ligne_commande.quantite) AS nbr_articles
+                 FROM ligne_commande 
+                 WHERE ligne_commande.commande_id = %s'''
+        mycursor.execute(sql, (id_commande,))
+        result = mycursor.fetchone()
+        prix_total_commande = result['prix_total']
+        nbr_articles_commande = result['nbr_articles']
+        
+    # Traitement pour changer l'état de la commande
+    if request.method == 'POST' and request.form.get('id_commande') and request.form.get('etat_id'):
+        id_commande_update = request.form.get('id_commande')
+        nouvel_etat_id = request.form.get('etat_id')
+        sql = '''UPDATE commande SET etat_id = %s WHERE id_commande = %s'''
+        mycursor.execute(sql, (nouvel_etat_id, id_commande_update))
+        get_db().commit()
+        flash(u'État de la commande mis à jour', 'alert-success')
+        return redirect('/client/commande/show')
+
+    # Récupération des états possibles
+    sql = '''SELECT id_etat, libelle FROM etat ORDER BY id_etat'''
+    mycursor.execute(sql)
+    etats = mycursor.fetchall()
 
     return render_template('client/commandes/show.html'
                            , commandes=commandes
                            , articles_commande=articles_commande
-                           , commande_adresses=commande_adresses
+                           , id_commande_selected=id_commande
+                           , prix_total_commande=prix_total_commande
+                           , nbr_articles_commande=nbr_articles_commande
+                           , etats=etats
                            )
 
