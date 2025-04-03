@@ -79,7 +79,7 @@ def client_commande_valide():
         }]
         id_adresse_fav = 1
     
-    # etape 2 : selection des adresses
+    # selection des adresses
     return render_template('client/boutique/panier_validation_adresses.html'
                            , adresses=adresses
                            , articles_panier=articles_panier
@@ -99,7 +99,7 @@ def client_commande_add():
     
     if not id_adresse_livraison or not id_adresse_facturation:
         flash(u'Veuillez sélectionner les adresses de livraison et de facturation', 'alert-warning')
-        return redirect('/client/panier/show')
+        return redirect('/client/article/show')
 
     id_client = session['id_user']
     sql = '''SELECT ligne_panier.vetement_id, vetement.prix_vetement as prix, ligne_panier.quantite
@@ -122,7 +122,7 @@ def client_commande_add():
         
         if stock_disponible < item['quantite']:
             flash(f'Stock insuffisant pour l\'article ID {item["vetement_id"]}. Stock disponible: {stock_disponible}', 'alert-danger')
-            return redirect('/client/panier/show')
+            return redirect('/client/article/show')
     
     # Vérification de la structure de la table commande
     sql = '''DESCRIBE commande'''
