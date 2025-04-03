@@ -113,6 +113,17 @@ def client_commande_add():
         flash(u'Pas d\'articles dans le panier', 'alert-warning')
         return redirect('/client/article/show')
     
+    # Vérification des stocks disponibles
+    for item in items_ligne_panier:
+        sql = '''SELECT stock FROM vetement WHERE id_vetement = %s'''
+        mycursor.execute(sql, (item['vetement_id'],))
+        result = mycursor.fetchone()
+        stock_disponible = result['stock']
+        
+        if stock_disponible < item['quantite']:
+            flash(f'Stock insuffisant pour l\'article ID {item["vetement_id"]}. Stock disponible: {stock_disponible}', 'alert-danger')
+            return redirect('/client/panier/show')
+    
     # Vérification de la structure de la table commande
     sql = '''DESCRIBE commande'''
     mycursor.execute(sql)
@@ -143,12 +154,18 @@ def client_commande_add():
     result = mycursor.fetchone()
     id_commande = result['last_insert_id']
     
-    # Ajout des lignes de commande et suppression du panier
+    # Ajout des lignes de commande, mise à jour des stocks et suppression du panier
     for item in items_ligne_panier:
         # Ajout d'une ligne de commande
         sql = '''INSERT INTO ligne_commande (commande_id, vetement_id, prix, quantite)
                  VALUES (%s, %s, %s, %s)'''
         mycursor.execute(sql, (id_commande, item['vetement_id'], item['prix'], item['quantite']))
+        
+        # Mise à jour du stock
+        sql = '''UPDATE vetement 
+                 SET stock = stock - %s 
+                 WHERE id_vetement = %s'''
+        mycursor.execute(sql, (item['quantite'], item['vetement_id']))
         
         # Suppression de la ligne de panier
         sql = '''DELETE FROM ligne_panier 
