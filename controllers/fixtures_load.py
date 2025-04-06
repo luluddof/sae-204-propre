@@ -11,28 +11,7 @@ fixtures_load = Blueprint('fixtures_load', __name__,
 @fixtures_load.route('/base/init')
 def fct_fixtures_load():
     mycursor = get_db().cursor()
-    sql='''DROP TABLE IF EXISTS ligne_commande;'''
-    mycursor.execute(sql)
-    mycursor = get_db().cursor()
-    sql='''DROP TABLE IF EXISTS ligne_panier;'''
-    mycursor.execute(sql)
-    mycursor = get_db().cursor()
-    sql='''DROP TABLE IF EXISTS vetement;'''
-    mycursor.execute(sql)
-    mycursor = get_db().cursor()
-    sql='''DROP TABLE IF EXISTS type_vetement;'''
-    mycursor.execute(sql)
-    mycursor = get_db().cursor()
-    sql='''DROP TABLE IF EXISTS taille;'''
-    mycursor.execute(sql)
-    mycursor = get_db().cursor()
-    sql='''DROP TABLE IF EXISTS commande ;'''
-    mycursor.execute(sql)
-    mycursor = get_db().cursor()
-    sql='''DROP TABLE IF EXISTS etat ;'''
-    mycursor.execute(sql)
-    mycursor = get_db().cursor()
-    sql='''DROP TABLE IF EXISTS utilisateur ;'''
+    sql='''DROP TABLE IF EXISTS ligne_commande, ligne_panier, historique, liste_envie, vetement, type_vetement, taille, commande, etat, utilisateur;'''
     mycursor.execute(sql)
     sql='''
     CREATE TABLE utilisateur(
@@ -304,6 +283,29 @@ INSERT INTO etat (id_etat, libelle) VALUES
          '''
     mycursor.execute(sql)
 
+    sql = '''
+    CREATE TABLE historique(
+   id_vetement int AUTO_INCREMENT,
+   id_utilisateur int,
+   date_consultation DATE,
+   PRIMARY KEY(id_vetement, id_utilisateur, date_consultation),
+   FOREIGN KEY(id_vetement) REFERENCES vetement(id_vetement),
+   FOREIGN KEY(id_utilisateur) REFERENCES utilisateur(id_utilisateur)
+)DEFAULT CHARSET utf8;
+    '''
+    mycursor.execute(sql)
+
+    sql = '''
+    CREATE TABLE liste_envie(
+   id_vetement int AUTO_INCREMENT,
+   id_utilisateur int AUTO_INCREMENT,
+   date_update DATE,
+   PRIMARY KEY(id_vetement, id_utilisateur, date_update),
+   FOREIGN KEY(id_vetement) REFERENCES vetement(id_vetement),
+   FOREIGN KEY(id_utilisateur) REFERENCES utilisateur(id_utilisateur)
+)DEFAULT CHARSET utf8;
+    '''
+    mycursor.execute(sql)
 
     get_db().commit()
     return redirect('/')

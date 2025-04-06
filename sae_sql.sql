@@ -1,3 +1,5 @@
+DROP TABLE IF EXISTS historique;
+DROP TABLE IF EXISTS liste_envie;
 DROP TABLE IF EXISTS ligne_commande;
 DROP TABLE IF EXISTS ligne_panier;
 DROP TABLE IF EXISTS commande;
@@ -6,6 +8,7 @@ DROP TABLE IF EXISTS type_vetement;
 DROP TABLE IF EXISTS taille;
 DROP TABLE IF EXISTS etat;
 DROP TABLE IF EXISTS utilisateur;
+
 
 CREATE TABLE utilisateur(
     id_utilisateur INT AUTO_INCREMENT,
@@ -81,6 +84,25 @@ CREATE TABLE ligne_panier(
     FOREIGN KEY (utilisateur_id) REFERENCES utilisateur(id_utilisateur),
     FOREIGN KEY (vetement_id) REFERENCES vetement(id_vetement)
 )DEFAULT CHARSET utf8;
+
+CREATE TABLE historique(
+   id_vetement int AUTO_INCREMENT,
+   id_utilisateur int,
+   date_consultation DATE,
+   PRIMARY KEY(id_vetement, id_utilisateur, date_consultation),
+   FOREIGN KEY(id_vetement) REFERENCES vetement(id_vetement),
+   FOREIGN KEY(id_utilisateur) REFERENCES utilisateur(id_utilisateur)
+)DEFAULT CHARSET utf8;
+
+CREATE TABLE liste_envie(
+   id_vetement int AUTO_INCREMENT,
+   id_utilisateur int AUTO_INCREMENT,
+   date_update DATE,
+   PRIMARY KEY(id_vetement, id_utilisateur, date_update),
+   FOREIGN KEY(id_vetement) REFERENCES vetement(id_vetement),
+   FOREIGN KEY(id_utilisateur) REFERENCES utilisateur(id_utilisateur)
+)DEFAULT CHARSET utf8;
+
 
 INSERT INTO utilisateur(id_utilisateur, login, email, password, role, nom) VALUES
 (1, 'admin', 'admin@admin.fr', 'pbkdf2:sha256:1000000$eQDrpqICHZ9eaRTn$446552ca50b5b3c248db2dde6deac950711c03c5d4863fe2bd9cef31d5f11988', 'ROLE_admin', 'admin'),

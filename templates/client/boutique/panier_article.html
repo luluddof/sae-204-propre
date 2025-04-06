@@ -6,7 +6,7 @@
 {% extends "client/layout_client.html" %}
 
 {% block title %}
-    <title>Boutique de vêtements</title>
+    <title>Boutique de vêtement</title>
 {% endblock %}
 
 {% block body %}
@@ -32,6 +32,18 @@
                                     <p class="card-text">Prix: {{ article.prix_vetement }} €</p>
                                     <p class="card-text">Taille: {{ article.libelle_taille }}</p>
                                     
+                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="liste-envie-{{ article.id_vetement }}" 
+                                                   onchange="window.location.href='/client/envie/add?id_article={{ article.id_vetement }}'"
+                                                   {% if article.id_vetement in liste_envies %} checked {% endif %}>
+                                            <label class="form-check-label" for="liste-envie-{{ article.id_vetement }}">
+                                                <i class="fas fa-heart"></i>
+                                            </label>
+                                        </div>
+                                        
+                                    </div>
+                                    
                                     {% if article.stock > 10 %}
                                         <p class="card-text text-success">Stock disponible: {{ article.stock }}</p>
                                     {% elif article.stock > 0 %}
@@ -39,7 +51,6 @@
                                     {% else %}
                                         <p class="card-text text-danger"><strong>Rupture de stock</strong></p>
                                     {% endif %}
-                                    
                                     {% if article.stock > 0 %}
                                     <form action="/client/panier/add" method="post" style="display: inline-block;">
                                         <input type="hidden" name="id_article" value="{{ article.id_vetement }}">
