@@ -1,7 +1,7 @@
 <div class="m-2">
 <nav class="navbar navbar-expand-lg navbar-light bg-light">
   <div class="container-fluid">
-    <a class="navbar-brand" href="#">SAE BDD 2024<span style="color:blue;">  Menu Client </span></a>
+    <a class="navbar-brand" href="#">SAE BDD 2025<span style="color:blue;">  Menu Client </span></a>
     <div class="collapse navbar-collapse" id="navbarSupportedContent">
         <ul class="navbar-nav mr-auto">
             <li class="nav-item dropdown">
@@ -32,7 +32,7 @@
             <!-- Authentication Links -->
             {% if session['role']  %}
                 <span class="navbar-text">
-                    Bonjour {{ session['login'] }}
+                    Bonjours {{ session['login'] }}
                     {% if session['role']=='ROLE_admin' %} (role : PB Admin)
                     {% elif session['role']=='ROLE_client' %} (role : Client) {% endif %}
                     &nbsp

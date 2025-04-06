@@ -86,7 +86,7 @@ CREATE TABLE ligne_panier(
 )DEFAULT CHARSET utf8;
 
 CREATE TABLE historique(
-   id_vetement int AUTO_INCREMENT,
+   id_vetement int ,
    id_utilisateur int,
    date_consultation DATE,
    PRIMARY KEY(id_vetement, id_utilisateur, date_consultation),
@@ -95,8 +95,8 @@ CREATE TABLE historique(
 )DEFAULT CHARSET utf8;
 
 CREATE TABLE liste_envie(
-   id_vetement int AUTO_INCREMENT,
-   id_utilisateur int AUTO_INCREMENT,
+   id_vetement int,
+   id_utilisateur int ,
    date_update DATE,
    PRIMARY KEY(id_vetement, id_utilisateur, date_update),
    FOREIGN KEY(id_vetement) REFERENCES vetement(id_vetement),

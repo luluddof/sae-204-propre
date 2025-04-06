@@ -10,146 +10,111 @@ articles (tableau de dictionnaires)
 {% extends 'client/layout_client.html' %}
 
 {% block title %}
-    <title>afficher les articles</title>
+    <title>Liste des souhaits</title>
 {% endblock %}
 
 {% block body %}
-<h3>votre liste d'envies</h3>
-<br><br>
-
-<table class="table">
-    <thead class="thead-dark">
-        <tr>
-            <th>nom</th><th>id</th><th>prix</th><th>stock</th><th>nb déclinaisons</th><th>image</th><th>opération</th>
-        </tr>
-    </thead>
-    <tbody>
-    {% if articles_liste_envies | length >= 1 %}
-        {% for ligne in articles_liste_envies %}
-           <tr>
-                  <td><a href="/client/envies/show?id_article_detail_wishlist={{ ligne.id_article }}">{{ ligne.nom }}</a></td>
-                  <td>{{ ligne.id_article }}</td>
-                  <td>{#{ ligne.prix }#}  {{  "{:,.2f} €".format(ligne.prix) }}</td>
-                  <td>
-                  {% if ligne.stock is defined %}
-                     {% if ligne.stock > 0 %}
-                        <strong style="color: green">{{ ligne.stock }}</strong>
-                     {% else %}
-                        <strong class="text-muted">article momentanément indisponible</strong>
-                     {% endif %}
-                  {% else %}
-                      ND
-                  {% endif %}
-                  </td>
-
-                 {# <td>{{ ligne.date_create }} {{ ligne.date_create.strftime('%d-%m-%Y') }} </td> #}
-                  <td>
-                      {% if ligne.nb_declinaisons is defined %}
-                        {{ ligne.nb_declinaisons }}
-                      {% else %}
-                         decli ND
-                      {% endif %}
-                  </td>
-                  <td>
-                        {%  if ligne.image is not none %}
-                            <img style="width:40px;height:40px"  src="{{ url_for('static', filename = 'images/' + ligne['image']) }}"  alt="image  de {{ ligne.nom }}" >
+    <div class="container">
+        <div class="row">
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header bg-primary text-white">
+                        <h3>Liste des souhaits</h3>
+                        <p>Nombre d'articles : {{ nb_liste_envies }}</p>
+                    </div>
+                    <div class="card-body">
+                        {% if articles_liste_envies|length > 0 %}
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Article</th>
+                                        <th>Prix</th>
+                                        <th>Stock</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for article in articles_liste_envies %}
+                                        <tr>
+                                            <td>
+                                                <a href="{{ url_for('client_article.client_article_details', id_article=article.id_vetement) }}">
+                                                    {{ article.nom_vetement }}
+                                                </a>
+                                            </td>
+                                            <td>{{ article.prix_vetement }} €</td>
+                                            <td>
+                                                {% if article.stock > 10 %}
+                                                    <span class="text-success">{{ article.stock }}</span>
+                                                {% elif article.stock > 0 %}
+                                                    <span class="text-warning">{{ article.stock }}</span>
+                                                {% else %}
+                                                    <span class="text-danger">Rupture de stock</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <div class="btn-group">
+                                                    {% if article.stock > 0 %}
+                                                    <form action="{{ url_for('client_liste_envies.client_panier_add') }}" method="post" style="display: inline-block;">
+                                                        <input type="hidden" name="id_article" value="{{ article.id_vetement }}">
+                                                        <input type="hidden" name="quantite" value="1">
+                                                        <button type="submit" class="btn btn-sm btn-success">Commander</button>
+                                                    </form>
+                                                    {% else %}
+                                                    <button class="btn btn-sm btn-secondary" disabled>Indisponible</button>
+                                                    {% endif %}
+                                                    
+                                                    <a href="{{ url_for('client_liste_envies.client_liste_envies_article_move') }}?id_article={{ article.id_vetement }}&action=up" class="btn btn-sm btn-primary">↑</a>
+                                                    <a href="{{ url_for('client_liste_envies.client_liste_envies_article_move') }}?id_article={{ article.id_vetement }}&action=down" class="btn btn-sm btn-primary">↓</a>
+                                                    <a href="{{ url_for('client_liste_envies.client_liste_envies_article_move') }}?id_article={{ article.id_vetement }}&action=first" class="btn btn-sm btn-primary">⇑</a>
+                                                    <a href="{{ url_for('client_liste_envies.client_liste_envies_article_move') }}?id_article={{ article.id_vetement }}&action=last" class="btn btn-sm btn-primary">⇓</a>
+                                                    <a href="{{ url_for('client_liste_envies.client_liste_envies_delete', id_article=article.id_vetement) }}" class="btn btn-sm btn-danger">Supprimer</a>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
                         {% else %}
-                            <img style="width:40px;height:40px"   src="{{ url_for('static', filename='images/no_photo.jpeg')}}"  alt="pas d image" >
+                            <p>Aucun article dans la liste des souhaits.</p>
                         {% endif %}
-                  </td>
-                  <td>
-                      <div class="row">
-                          <div class="col-3">
-                              <a  class="btn btn-outline-danger" href="/client/envie/delete?id_article={{ ligne.id_article }}" >supprimer</a>
-                          </div>
-                          <div class="col-3">
-                          <form  action="/client/panier/add"  method="post" >
-                              <input type="hidden" name="id_article" value="{{ ligne.id_article }}">
-                              <input type="hidden" name="quantite" value="1">
-                                            <div class="input-group">
-                                            <button class="btn  btn-outline-success"  id="button-addon1">
-                                                <i class="fas fa-shopping-cart">commander</i>
-                                            </button>
-                                            </div>
-                          </form>
-                          </div>
-                          {% if loop.index !=1 %}
-                          <div class="col-1">
-                              <a  class="btn btn-outline-warning" href="/client/envies/up?id_article={{ ligne.id_article }}">⬆</a>
-                          </div>
-                          {% endif %}
-                          {% if loop.index != loop.length %}
-                          <div class="col-1">
-                              <a  class="btn btn-outline-warning" href="/client/envies/down?id_article={{ ligne.id_article }}">️⬇</a>
-                          </div>
-                          {% endif %}
-                          {% if  loop.index != 1 %}
-                          <div class="col-1">
-                              <a  class="btn btn-outline-warning" href="/client/envies/first?id_article={{ ligne.id_article }}">⏫</a>
-                          </div>
-                          {% endif %}
-                          {% if   loop.index != loop.length %}
-                          <div class="col-1">
-                              <a  class="btn btn-outline-warning" href="/client/envies/last?id_article={{ ligne.id_article }}">⏬</a>
-                          </div>
-                          {% endif %}
-                          <div class="col-1">{{ compteur_id_article }}</div>
-                      </div>
-                  </td>
-           </tr>
-        {% endfor %}
-    {% else %}
-            <tr>
-                  <td>
-                      pas d'article
-                  </td>
-           </tr>
-    {% endif %}
-    </tbody>
-</table>
-    <strong style="color: red">{{ nb_liste_envies }} article(s)</strong> <span style="color: red">dans la WishList</span><br>
-    {%  if info_wishlist is defined and info_wishlist.nb_wish_list_other is defined %}
-    {%  if  info_wishlist.nb_wish_list_other > 0 %}
-        <strong style="color: green">{{ info_wishlist.nb_wish_list_other }} </strong> <span style="color: green">article(s) de nom </span>
-        <strong style="color: green"> {{ info_wishlist.nom }}</strong> <span style="color: green">dans la WishList des autres</span>
-    {% else %}
-        <span style="color: green">Vous êtes le seul à avoir cet article dans votre wishlist</span>
-    {% endif %}
-
-    <br>   <span style="color: blue">  il y a <strong>
-        {%  if  info_wishlist_categorie.nb_wish_list_other_categorie is defined and info_wishlist_categorie.nb_wish_list_other_categorie > 0 %}
-        {{ info_wishlist_categorie.nb_wish_list_other_categorie }}
-        {% else %}
-        aucun
-        {% endif %}</strong>
-            article(s) dans la même catégorie : "<strong>{{ info_wishlist_categorie.libelle }}</strong>"  que ce produit dans votre wishlist
-
-    </span>
-    {% endif %}
-
-    <hr>  <!-- ------------------------------------------------------------------------------------------------------------- -->
-    <h3>Derniers articles consultés (6 maximum)</h3>
-    <div class="row">
-                {% for article in articles_historique  %}
-                        <div class="card col-2 mt-2 p-1">
-                            <div class="card-body border-dark rounded p-1">
-                                <a href="/client/article/details?id_article={{ article.id_article }}" >
-                                <h3 class="card-title">
-                                    <span style="color: #0b2e13">{{ article.nom }}</span><br>
-                                    {{ article.prix }}
-                                    €
-                                </h3>
-                                     {%  if article.image is not none %}
-                                        <img class="card-img-top rounded mx-auto d-block"  style="width:100px;height:100px"  src="{{ url_for('static', filename = 'images/')}}{{ article.image }}"  alt="image  de {{ article.nom }}" >
-                                    {% else %} <img class="card-img-top rounded mx-auto d-block"   style="width:100px;height:100px"   src="{{ url_for('static', filename='images/no_photo.jpeg')}}"  alt="image  de {{ article.nom }}" >
-                                    {% endif %}
-                                    <hr>
-                                </a>
-                            </div>
-                        </div>
-                {% endfor %}
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header bg-info text-white">
+                        <h3>Historique</h3>
+                        <p>Nombre d'articles : {{ nb_liste_historique }}</p>
+                    </div>
+                    <div class="card-body">
+                        {% if articles_historique|length > 0 %}
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Article</th>
+                                        <th>Date</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for article in articles_historique %}
+                                        <tr>
+                                            <td>
+                                                <a href="{{ url_for('client_article.client_article_details', id_article=article.id_vetement) }}">
+                                                    {{ article.nom_vetement }}
+                                                </a>
+                                            </td>
+                                            <td>{{ article.date_consultation }}</td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        {% else %}
+                            <p>Aucun article dans l'historique.</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
         </div>
-    <strong style="color: red">{{ nb_liste_historique }} article(s)/6</strong>  <span style="color: red">dans l'historique</span>
     </div>
-
 {% endblock %}

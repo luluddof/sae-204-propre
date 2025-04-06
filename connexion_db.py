@@ -1,5 +1,4 @@
 from flask import Flask, request, render_template, redirect, url_for, abort, flash, session, g
-
 import pymysql.cursors
 
 def get_db():
